@@ -135,7 +135,7 @@ class GameState:
                 if distance < min_distance:
                     min_distance = distance
                     
-            heuristic = min_distance          
+            heuristic += min_distance          
         return heuristic
 
     def get_total_cost(self):

@@ -152,4 +152,8 @@ class GameState:
 
     def check_solved(self):
         """Check if the game is solved"""
-        pass
+        check = False
+        for box in self.boxes:
+            if box == self.is_target(box):
+                check = True
+        return check

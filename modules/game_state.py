@@ -22,13 +22,13 @@ The game state class has the following methods:
 class GameState:
     def __init__(self, map, current_cost=0):
         self.map = map
+        self.height = len(self.map)
+        self.width = len(self.map[0])
         self.player = self.find_player()
         self.boxes = self.find_boxes()
         self.targets = self.find_targets()
         self.is_solved = self.check_solved()
         self.current_cost = current_cost
-        self.height = len(self.map)
-        self.width = len(self.map[0])
 
     # ------------------------------------------------------------------------------------------------------------------
     # The following methods are used to find the player, boxes, and targets in the map
@@ -38,15 +38,31 @@ class GameState:
     def find_player(self):
         """Find the player in the map and return its position"""
         # TODO: implement this method
-        return (0, 0)
+        for row in range(self.height):
+            for column in range(self.width):
+                if self.map[row][column] in ('@', '+'):
+                    return (row, column)
+                
 
     def find_boxes(self):
         """Find all the boxes in the map and return their positions"""
-        pass
+        boxes = []
+        
+        for row in range(self.height):
+            for column in range(self.width):
+                if self.map[row][column] in ('$', '*'):
+                    boxes.append((row, column))
+                    
+        return boxes
 
     def find_targets(self):
         """Find all the targets in the map and return their positions"""
-        pass
+        targets = []
+        for i in range(self.height):
+            for j in range(self.width):
+                if self.map[i][j] in ('.', '*'):
+                    targets.append((i, j))
+        return targets
 
     # ------------------------------------------------------------------------------------------------------------------
     # The following methods are used to check if a position is a wall, box, target, or empty space
@@ -55,23 +71,44 @@ class GameState:
 
     def is_wall(self, position):
         """Check if the given position is a wall"""
-        pass
+        check = False
+        row, column = position
+        if self.map[row][column] == "#":
+            check = True
+        
+        return check
+        
 
     def is_box(self, position):
         """Check if the given position is a box
             Note: the box can be on "$" or "*" (box on target)
         """
-        pass
+        check = False
+        row, column = position
+        if self.map[row][column] in ('$', '*'):
+            check = True
+        
+        return check
 
     def is_target(self, position):
         """Check if the given position is a target
             Note: the target can be "." or "*" (box on target)
         """
-        pass
+        check = False
+        row, column = position
+        if self.map[row][column] in ('.', '*'):
+            check = True
+        
+        return check
 
     def is_empty(self, position):
         """Check if the given position is empty"""
-        pass
+        check = False
+        row, column = position
+        if self.map[row][column] == ' ':
+            check = True
+        
+        return check
 
     # ------------------------------------------------------------------------------------------------------------------
     # The following methods get heuristics for the game state (for informed search strategies)

@@ -114,23 +114,41 @@ class GameState:
     # The following methods get heuristics for the game state (for informed search strategies)
     # ------------------------------------------------------------------------------------------------------------------
 
-    def get_heuristic(self):
+        def get_heuristic(self):
         """Get the heuristic for the game state
             Note: the heuristic is the sum of the distances from all the boxes to their nearest targets
         """
-        pass
+        heuristic = 0
+        min_distance = float("inf")
+        
+        for box in self.boxes:
+            box_row, box_col = box
+            
+            for target in self.targets:
+                target_row, target_col = target
+                
+                move_row = abs(target_row - box_row)
+                move_col = abs(target_col - box_col)
+                
+                distance = move_row + move_col
+                
+                if distance < min_distance:
+                    min_distance = distance
+                    
+            heuristic = min_distance          
+        return heuristic
 
     def get_total_cost(self):
         """Get the cost for the game state
             Note: the cost is the number of moves from the initial state to the current state + the heuristic
         """
-        pass
+        return self.get_current_cost() + self.get_heuristic()
 
     def get_current_cost(self):
         """Get the current cost for the game state
             Note: the current cost is the number of moves from the initial state to the current state
         """
-        pass
+        return self.current_cost
 
     # ------------------------------------------------------------------------------------------------------------------
     # The following methods are used to generate the next game state and check if the game is solved
@@ -147,13 +165,57 @@ class GameState:
             - The player cannot push a box to a wall
             - The player cannot push two boxes at the same time
         """
+        p_row, p_col = self.player
+        if direction == 'up':
+            p_col += 1
+        elif direction == 'down':
+            p_col -= 1
+        elif direction == 'left':
+            p_row -= 1
+        elif direction == 'right':
+            p_row += 1
+        
+        # If player position is inside the map    
+        if 1 < p_row < (self.width - 1) or 0 < p_col < (self.height - 1):
+            player_new_pos = (p_row, p_col) # player position
+            
+            # If player meet wall then return
+            if self.is_wall(player_new_pos) == True:
+                return self
+            # If player go into box position
+            if self.is_box(player_new_pos) == True:
+                b_row, b_col = player_new_pos
+                if direction == 'up':
+                    b_col += 1
+                elif direction == 'down':
+                    b_col -= 1
+                elif direction == 'left':
+                    b_row -= 1
+                elif direction == 'right':
+                    b_row += 1
+                
+                box_new_pos = (b_row, b_col) # box position
+                # If box meet wall or meet another box then return
+                if self.is_wall(box_new_pos) == True or self.is_box(box_new_pos):
+                    return self
+                # update box position
+                # update player position
+                for i in range(self.boxes):
+                    if self.boxes[i] == player_new_pos: # get box
+                        self.boxes[i] = box_new_pos
+                        self.player = player_new_pos # update player position
+            else:
+                # No interruption 
+                self.player = player_new_pos
+        else:
+            return self                
+                
         # TODO: implement this method
         return GameState(self.map, self.current_cost + 1)
 
     def check_solved(self):
         """Check if the game is solved"""
-        check = False
         for box in self.boxes:
-            if box == self.is_target(box):
-                check = True
-        return check
+            if box in self.targets:
+                return True
+        pass

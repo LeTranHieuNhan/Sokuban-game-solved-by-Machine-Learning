@@ -1,1 +1,9 @@
 Cap nhat moi thay doi o day:
+
+29/01/2024
+game_state.py
+- get_heuristic()
+- get_total_cost()
+- get_current_cost()
+- move()
+- check_solved()

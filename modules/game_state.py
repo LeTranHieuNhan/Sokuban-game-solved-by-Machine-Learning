@@ -18,6 +18,7 @@ The game state class has the following methods:
 - check_solved(): check if the game is solved
 """
 
+import time
 
 class GameState:
     def __init__(self, map, current_cost=0):
@@ -30,11 +31,13 @@ class GameState:
         self.is_solved = self.check_solved()
         self.current_cost = current_cost
 
+    def __lt__(self, other):
+        return self.map < other.map
     # ------------------------------------------------------------------------------------------------------------------
     # The following methods are used to find the player, boxes, and targets in the map
     # The positions are tuples (row, column)
     # ------------------------------------------------------------------------------------------------------------------
-
+    
     def find_player(self):
         """Find the player in the map and return its position"""
         # TODO: implement this method
@@ -60,7 +63,7 @@ class GameState:
         targets = []
         for i in range(self.height):
             for j in range(self.width):
-                if self.map[i][j] in ('.', '*'):
+                if self.map[i][j] in ('.', '*') or self.map[i][j] in ('+', '*'):
                     targets.append((i, j))
         return targets
 
@@ -96,7 +99,7 @@ class GameState:
         """
         check = False
         row, column = position
-        if self.map[row][column] in ('.', '*'):
+        if self.map[row][column] in ('.', '*') or self.map[row][column] in ('+', '*'):
             check = True
         
         return check
@@ -114,7 +117,7 @@ class GameState:
     # The following methods get heuristics for the game state (for informed search strategies)
     # ------------------------------------------------------------------------------------------------------------------
 
-        def get_heuristic(self):
+    def get_heuristic(self):
         """Get the heuristic for the game state
             Note: the heuristic is the sum of the distances from all the boxes to their nearest targets
         """
@@ -122,16 +125,17 @@ class GameState:
         min_distance = float("inf")
         
         for box in self.boxes:
-            box_row, box_col = box
+            box_row, box_col = box # Box position
             
             for target in self.targets:
-                target_row, target_col = target
+                target_row, target_col = target # target position
                 
-                move_row = abs(target_row - box_row)
-                move_col = abs(target_col - box_col)
+                move_row = abs(target_row - box_row) # row distance
+                move_col = abs(target_col - box_col) # col distance
                 
                 distance = move_row + move_col
                 
+                # check if current distance is greater than min distance
                 if distance < min_distance:
                     min_distance = distance
                     
@@ -153,7 +157,7 @@ class GameState:
     # ------------------------------------------------------------------------------------------------------------------
     # The following methods are used to generate the next game state and check if the game is solved
     # ------------------------------------------------------------------------------------------------------------------
-
+    
     def move(self, direction):
         """Generate the next game state by moving the player to the given direction. 
             The rules are as follows:
@@ -165,57 +169,90 @@ class GameState:
             - The player cannot push a box to a wall
             - The player cannot push two boxes at the same time
         """
-        p_row, p_col = self.player
-        if direction == 'up':
-            p_col += 1
-        elif direction == 'down':
-            p_col -= 1
-        elif direction == 'left':
-            p_row -= 1
-        elif direction == 'right':
-            p_row += 1
-        
+        p_row, p_col = self.player  # player current position
+        p_new_row, p_new_col = p_row, p_col
+        if direction == 'U':
+            p_new_row -= 1
+        elif direction == 'D':
+            p_new_row += 1
+        elif direction == 'L':
+            p_new_col -= 1
+        elif direction == 'R':
+            p_new_col += 1
+        elif direction == 'M':
+            return GameState(self.map, self.current_cost)
+
+        new_map = [list(row) for row in self.map]
+        player_new_pos = (p_new_row, p_new_col)  # player new position
         # If player position is inside the map    
-        if 1 < p_row < (self.width - 1) or 0 < p_col < (self.height - 1):
-            player_new_pos = (p_row, p_col) # player position
-            
-            # If player meet wall then return
-            if self.is_wall(player_new_pos) == True:
+        if 0 < p_row < (self.width - 1) or 0 < p_col < (self.height - 1):
+            # If player meets wall then return
+            if self.is_wall(player_new_pos):
                 return self
-            # If player go into box position
-            if self.is_box(player_new_pos) == True:
+
+            # If player goes into goal direction
+            if self.is_target(player_new_pos):
+                new_map[p_new_row][p_new_col] = '+'
+                new_map[p_row][p_col] = ' '
+
+            # If player goes into box position
+            if self.is_box(player_new_pos):
                 b_row, b_col = player_new_pos
-                if direction == 'up':
-                    b_col += 1
-                elif direction == 'down':
-                    b_col -= 1
-                elif direction == 'left':
-                    b_row -= 1
-                elif direction == 'right':
-                    b_row += 1
-                
-                box_new_pos = (b_row, b_col) # box position
-                # If box meet wall or meet another box then return
-                if self.is_wall(box_new_pos) == True or self.is_box(box_new_pos):
+                b_new_row, b_new_col = b_row, b_col
+                if direction == 'U':
+                    b_new_row -= 1
+                elif direction == 'D':
+                    b_new_row += 1
+                elif direction == 'L':
+                    b_new_col -= 1
+                elif direction == 'R':
+                    b_new_col += 1
+                elif direction == 'M':
+                    return GameState(self.map, self.current_cost)
+                box_new_pos = (b_new_row, b_new_col)  # box position
+
+                # Check if the box is on a target, and if so, do not move it
+                if self.is_target(player_new_pos):
                     return self
-                # update box position
-                # update player position
-                for i in range(self.boxes):
-                    if self.boxes[i] == player_new_pos: # get box
-                        self.boxes[i] = box_new_pos
-                        self.player = player_new_pos # update player position
-            else:
-                # No interruption 
-                self.player = player_new_pos
+                # If box meets wall or meets another box then return
+                if self.is_wall(box_new_pos) or self.is_box(box_new_pos):
+                    return self
+                # TODO If box goes into goal
+                if self.is_target(box_new_pos):
+                    new_map[b_new_row][b_new_col] = '*'
+                    new_map[b_row][b_col] = '@'
+                    new_map[p_row][p_col] = ' '
+                # Update map, player will go into box, and box will go into another direction
+                else:
+                    new_map[b_row][b_col] = new_map[p_row][p_col]
+                    new_map[p_row][p_col] = ' '
+                    new_map[b_new_row][b_new_col] = '$'
+
+            # No interruption 
+            # Check if the previous path is the goal path
+            if not self.is_target(player_new_pos):
+                if self.is_target(self.player):
+                    new_map[p_row][p_col] = '.'
+                else:
+                    new_map[p_row][p_col] = ' '
+                new_map[p_new_row][p_new_col] = '@'
         else:
-            return self                
-                
+            return self
+
+        # Update map                
+        self.map = ["".join(row) for row in new_map]
+
         # TODO: implement this method
         return GameState(self.map, self.current_cost + 1)
 
     def check_solved(self):
         """Check if the game is solved"""
+        total_boxes = len(self.boxes)
+        count = 0 
+        
         for box in self.boxes:
-            if box in self.targets:
-                return True
-        pass
+            if self.is_target(box):
+                count += 1
+        
+        if total_boxes == count:
+            return True

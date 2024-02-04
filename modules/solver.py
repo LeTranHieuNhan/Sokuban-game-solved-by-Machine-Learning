@@ -9,10 +9,13 @@
 # - solve(): solve the game
 # """
 
+# Extra function: dfs_recursive
+
 import time
 from collections import deque
 from queue import Queue
 from queue import PriorityQueue
+import random
 
 
 class Solver(object):
@@ -46,14 +49,15 @@ class Solver(object):
         visited = set()
         queue = Queue()
 
-        # Each element in the queue is a tuple (GameState, path)
+        # include (total cost, GameState, path)
         queue.put((self.initial_state, []))
 
         while not queue.empty():
             current_state, path = queue.get()
-            visited.add(tuple(map(tuple, current_state.map)))  # Convert map to tuple for hashing
+            visited.add(tuple(map(tuple, current_state.map)))  # hasing
             
             for direction in ['U', 'D', 'L', 'R']:
+                # move('M'): Update all attributes of the current state to temp_state
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
                 
@@ -64,40 +68,37 @@ class Solver(object):
                 if tuple(map(tuple, next_state.map)) not in visited:
                     queue.put((next_state, path + [direction]))
 
-        return None  # Return None if no solution is found
+        return None  
+
+    def dfs_recursive(self, current_state, path, visited = set()):
+        if current_state.check_solved():
+            return path  
+
+        visited.add(tuple(map(tuple, current_state.map)))  # hashing
+
+        for direction in ['U', 'D', 'L', 'R']: 
+            temp_state = current_state.move('M')
+            next_state = temp_state.move(direction)
+
+            # Check if the next state is not visited
+            if tuple(map(tuple, next_state.map)) not in visited:
+                result = self.dfs_recursive(next_state, path + [direction], visited)
+                if result is not None:
+                    return result
+
+        return None  
 
     def dfs(self):
-        visited = set()
-        stack = []
+        return self.dfs_recursive(self.initial_state, [])
 
-        #Each element in the stack is a tuple (GameState, path, visited)
-        stack.append((self.initial_state, [], visited))
 
-        while stack:
-            current_state, path, visited = stack.pop() # pop 
-
-            if current_state.check_solved():
-                return path  # Return the path if the goal is reached
-
-            visited.add(tuple(map(tuple, current_state.map)))  # Convert map to tuple for hashing
-
-            for direction in reversed(['U', 'D', 'L', 'R']):
-                temp_state = current_state.move('M')
-                next_state = temp_state.move(direction)
-
-                # Check if the next state is not visited
-                if tuple(map(tuple, next_state.map)) not in visited:
-                    stack.append((next_state, path + [direction], visited))
-                    # stack (right, left)
-
-        return None  # Return None if no solution is found
 
 
     def astar(self):
         visited = set()
         priority_queue = PriorityQueue()
 
-        # Include (total cost, GameState, path)
+        # include (total cost, GameState, path)
         priority_queue.put((self.initial_state.get_total_cost(), self.initial_state, []))
         
         while not priority_queue.empty():
@@ -107,7 +108,7 @@ class Solver(object):
             if current_state.check_solved():
                 return path  # Return the path if the goal is reached
 
-            visited.add(tuple(map(tuple, current_state.map)))
+            visited.add(tuple(map(tuple, current_state.map))) # hasing
 
             for direction in ['U', 'D', 'L', 'R']:
                 temp_state = current_state.move('M')
@@ -125,12 +126,17 @@ class Solver(object):
         visited = set()
         priority_queue = PriorityQueue()
         #include (current cost, GameState, path)
+        
         priority_queue.put((self.initial_state.get_current_cost(), self.initial_state, []))
+        
         while not priority_queue.empty():
             _, current_state, path = priority_queue.get()
+            
             if current_state.check_solved():
                 return path
-            visited.add(tuple(map(tuple, current_state.map)))
+            
+            visited.add(tuple(map(tuple, current_state.map))) # hasing
+            
             for direction in ['U', 'D', 'L', 'R']:
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
@@ -146,11 +152,14 @@ class Solver(object):
 
         # include (heuristic, GameState, path)
         priority_queue.put((self.initial_state.get_heuristic(), self.initial_state, []))
+        
         while not priority_queue.empty():
             _, current_state, path = priority_queue.get()
+            
             if current_state.check_solved():
                 return path
-            visited.add(tuple(map(tuple, current_state.map)))
+            visited.add(tuple(map(tuple, current_state.map))) # hasing
+            
             for direction in ['U','D','L','R']:
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
@@ -160,7 +169,24 @@ class Solver(object):
         return None
 
     def custom(self):
-        return ['U', 'U',]
+        path = []
+
+        while not self.initial_state.check_solved():
+            # Randomly choose a direction (U, D, L, R)
+            direction = random.choice(['U', 'D', 'L', 'R'])
+            
+            # Move in the chosen direction
+            next_state = self.initial_state.move(direction)
+            
+            # Check if the move is valid (i.e., the state has changed)
+            if next_state != self.initial_state:
+                # Append the chosen direction to the path
+                path.append(direction)
+            
+            # Update the initial state for the next iteration
+            self.initial_state = next_state
+
+        return path
 
     def get_solution(self):
         return self.solution

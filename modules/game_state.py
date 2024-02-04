@@ -19,6 +19,7 @@ The game state class has the following methods:
 """
 
 import time
+import copy
 
 class GameState:
     def __init__(self, map, current_cost=0):
@@ -122,7 +123,7 @@ class GameState:
             Note: the heuristic is the sum of the distances from all the boxes to their nearest targets
         """
         heuristic = 0
-        min_distance = float("inf")
+        min_distance = float("inf") # positive infintie for comparision
         
         for box in self.boxes:
             box_row, box_col = box # Box position
@@ -182,8 +183,9 @@ class GameState:
         elif direction == 'M':
             return GameState(self.map, self.current_cost)
 
-        new_map = [list(row) for row in self.map]
+        new_map = copy.deepcopy(self.map)
         player_new_pos = (p_new_row, p_new_col)  # player new position
+        
         # If player position is inside the map    
         if 0 < p_row < (self.width - 1) or 0 < p_col < (self.height - 1):
             # If player meets wall then return
@@ -211,7 +213,7 @@ class GameState:
                     return GameState(self.map, self.current_cost)
                 box_new_pos = (b_new_row, b_new_col)  # box position
 
-                # Check if the box is on a target, and if so, do not move it
+                # If the box is on a target, and if so, do not move it
                 if self.is_target(player_new_pos):
                     return self
                 # If box meets wall or meets another box then return
@@ -228,8 +230,7 @@ class GameState:
                     new_map[p_row][p_col] = ' '
                     new_map[b_new_row][b_new_col] = '$'
 
-            # No interruption 
-            # Check if the previous path is the goal path
+            # If the previous path is the goal path
             if not self.is_target(player_new_pos):
                 if self.is_target(self.player):
                     new_map[p_row][p_col] = '.'
@@ -240,7 +241,7 @@ class GameState:
             return self
 
         # Update map                
-        self.map = ["".join(row) for row in new_map]
+        self.map = copy.deepcopy(new_map)
 
         # TODO: implement this method
         return GameState(self.map, self.current_cost + 1)

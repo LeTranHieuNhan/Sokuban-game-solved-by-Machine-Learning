@@ -52,16 +52,24 @@ class Solver(object):
         # include (total cost, GameState, path)
         queue.put((self.initial_state, []))
 
+        count_expanded = 0
+        count_move_states = 0
         while not queue.empty():
             current_state, path = queue.get()
+            count_expanded += 1
             visited.add(tuple(map(tuple, current_state.map)))  # hasing
             
             for direction in ['U', 'D', 'L', 'R']:
                 # move('M'): Update all attributes of the current state to temp_state
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
+                count_move_states += 1
                 
                 if next_state.check_solved():
+                    print("Expanded Node:", str(count_expanded))
+                    print("All states: ", str(count_move_states))
+                    print("Number of moves: ", len(path + [direction]))
+                    print(path + [direction])
                     return path + [direction]
                 
                 # Check if the next state is not visited
@@ -70,26 +78,35 @@ class Solver(object):
 
         return None  
 
-    def dfs_recursive(self, current_state, path, visited = set()):
+    def dfs_recursive(self, current_state, path, count_expanded, count_move_states, visited):
         if current_state.check_solved():
+            print("Expanded Node:", str(count_expanded))
+            print("All states: ", str(count_move_states))
+            print("Number of moves: ", len(path))
+            print(path)
             return path  
 
+        count_expanded += 1
         visited.add(tuple(map(tuple, current_state.map)))  # hashing
 
         for direction in ['U', 'D', 'L', 'R']: 
             temp_state = current_state.move('M')
             next_state = temp_state.move(direction)
-
+            count_move_states += 1
+            
             # Check if the next state is not visited
             if tuple(map(tuple, next_state.map)) not in visited:
-                result = self.dfs_recursive(next_state, path + [direction], visited)
+                result = self.dfs_recursive(next_state, path + [direction], count_expanded, count_move_states, visited)
                 if result is not None:
                     return result
 
         return None  
 
     def dfs(self):
-        return self.dfs_recursive(self.initial_state, [])
+        count_expanded = 0
+        count_move_states = 0
+        visited = set()
+        return self.dfs_recursive(self.initial_state, [], count_expanded, count_move_states, visited)
 
 
 
@@ -101,11 +118,18 @@ class Solver(object):
         # include (total cost, GameState, path)
         priority_queue.put((self.initial_state.get_total_cost(), self.initial_state, []))
         
+        count_expanded = 0
+        count_move_states = 0
         while not priority_queue.empty():
             _, current_state, path = priority_queue.get()
-
+            count_expanded += 1
+            
             # Check if the current state is solved
             if current_state.check_solved():
+                print("Expanded Node:", str(count_expanded))
+                print("All states: ", str(count_move_states))
+                print("Number of moves: ", len(path))
+                print(path)
                 return path  # Return the path if the goal is reached
 
             visited.add(tuple(map(tuple, current_state.map))) # hasing
@@ -113,7 +137,8 @@ class Solver(object):
             for direction in ['U', 'D', 'L', 'R']:
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
-
+                count_move_states += 1
+                
                 # Check if the next state is not visited
                 if tuple(map(tuple, next_state.map)) not in visited:
 
@@ -129,10 +154,17 @@ class Solver(object):
         
         priority_queue.put((self.initial_state.get_current_cost(), self.initial_state, []))
         
+        count_expanded = 0
+        count_move_states = 0
         while not priority_queue.empty():
             _, current_state, path = priority_queue.get()
+            count_expanded += 1
             
             if current_state.check_solved():
+                print("Expanded Node:", str(count_expanded))
+                print("All states: ", str(count_move_states))
+                print("Number of moves: ", len(path))
+                print(path)
                 return path
             
             visited.add(tuple(map(tuple, current_state.map))) # hasing
@@ -140,7 +172,8 @@ class Solver(object):
             for direction in ['U', 'D', 'L', 'R']:
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
-
+                count_move_states += 1
+                
                 if tuple(map(tuple, next_state.map)) not in visited:
                     priority_queue.put((next_state.get_current_cost(), next_state, path + [direction]))
 
@@ -153,17 +186,25 @@ class Solver(object):
         # include (heuristic, GameState, path)
         priority_queue.put((self.initial_state.get_heuristic(), self.initial_state, []))
         
+        count_expanded = 0
+        count_move_states = 0
         while not priority_queue.empty():
             _, current_state, path = priority_queue.get()
+            count_expanded += 1
             
             if current_state.check_solved():
+                print("Expanded Node:", str(count_expanded))
+                print("All states: ", str(count_move_states))
+                print("Number of moves: ", len(path))
+                print(path)
                 return path
             visited.add(tuple(map(tuple, current_state.map))) # hasing
             
             for direction in ['U','D','L','R']:
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
-
+                count_move_states += 1
+                
                 if tuple(map(tuple, next_state.map)) not in visited:
                     priority_queue.put((next_state.get_heuristic(), next_state, path + [direction]))
         return None

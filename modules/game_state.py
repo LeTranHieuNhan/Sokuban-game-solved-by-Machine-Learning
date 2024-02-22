@@ -64,7 +64,7 @@ class GameState:
         targets = []
         for i in range(self.height):
             for j in range(self.width):
-                if self.map[i][j] in ('.', '*') or self.map[i][j] in ('+', '*'):
+                if self.map[i][j] in ('.', '*', '+'):
                     targets.append((i, j))
         return targets
 
@@ -100,7 +100,7 @@ class GameState:
         """
         check = False
         row, column = position
-        if self.map[row][column] in ('.', '*') or self.map[row][column] in ('+', '*'):
+        if self.map[row][column] in ('.', '*', '+'):
             check = True
         
         return check
@@ -185,78 +185,81 @@ class GameState:
 
         new_map = copy.deepcopy(self.map)
         player_new_pos = (p_new_row, p_new_col)  # player new position
-        
-        # If player position is inside the map    
-        if 0 < p_row < (self.width - 1) or 0 < p_col < (self.height - 1):
-            # If player meets wall then return
-            if self.is_wall(player_new_pos):
-                return self
-
-            
-
-            # If player goes into box position
-            elif self.is_box(player_new_pos):
-                # box position
-                b_row, b_col = player_new_pos
-                b_new_row, b_new_col = b_row, b_col
-                if direction == 'U':
-                    b_new_row -= 1
-                elif direction == 'D':
-                    b_new_row += 1
-                elif direction == 'L':
-                    b_new_col -= 1
-                elif direction == 'R':
-                    b_new_col += 1
-                elif direction == 'M':
-                    return GameState(self.map, self.current_cost)
-                box_new_pos = (b_new_row, b_new_col)  # box position
-                
-
-
-                # If box meets wall or meets another box then return
-                if self.is_wall(box_new_pos) or self.is_box(box_new_pos):
-                    return self
-                # TODO If box goes into goal
-                if self.is_target(box_new_pos):
-                    new_map[b_new_row][b_new_col] = '*'
-                    new_map[b_row][b_col] = '@'
-                    new_map[p_row][p_col] = ' '
-                # TODO If box goes out of goal
-                    # previous box position in target
-                elif self.is_target(player_new_pos):
-                    new_map[b_new_row][b_new_col] = '$'
-                    new_map[b_row][b_col] = '+'
-                    new_map[p_row][p_col] = ' '   
-                # Update map, player will go into box, and box will go into another direction
-                else:
-                    new_map[b_row][b_col] = new_map[p_row][p_col]
-                    new_map[p_row][p_col] = ' '
-                    new_map[b_new_row][b_new_col] = '$'
-
-            # If the previous path is the goal path
-            elif self.is_target(self.player):
-                if self.is_target(player_new_pos):
-                    new_map[p_new_row][p_new_col] = '+'
-                    new_map[p_row][p_col] = '.'
-                elif not self.is_target(player_new_pos):
-                    new_map[p_new_row][p_new_col] = '@' 
-                    new_map[p_row][p_col] = '.'
-            elif not self.is_target(self.player):
-                if self.is_target(player_new_pos):
-                    new_map[p_new_row][p_new_col] = '+'
-                    new_map[p_row][p_col] = ' '
-                else:
-                    new_map[p_new_row][p_new_col] = '@'
-                    new_map[p_row][p_col] = ' '
-        else:
+        p_new_row, p_new_col = player_new_pos
+        # If player go into wall position
+        if self.is_wall(player_new_pos):
             return self
+        # If player go into box position
+        elif self.is_box(player_new_pos):
+            # box position
+            b_row, b_col = player_new_pos
+            box_pos = player_new_pos
+            b_new_row, b_new_col = b_row, b_col
+            if direction == 'U':
+                    b_new_row -= 1
+            elif direction == 'D':
+                b_new_row += 1
+            elif direction == 'L':
+                b_new_col -= 1
+            elif direction == 'R':
+                b_new_col += 1
+            elif direction == 'M':
+                return GameState(self.map, self.current_cost)
+            box_new_pos = (b_new_row, b_new_col)  # box position
+
+            # If box go into wall postion or another box position
+            if self.is_wall(box_new_pos) or self.is_box(box_new_pos):
+                return self
+            # If box go into target position
+            elif self.is_target(box_new_pos):
+                new_map[b_new_row][b_new_col] = '*'
+                # If previous box position (player new position) is in target
+                if self.is_target(box_pos):
+                    new_map[b_row][b_col] = '+'
+                    if self.is_target(self.player):
+                        new_map[p_row][p_col] = '.'
+                    else:
+                        new_map[p_row][p_col] = ' '
+                else:
+                    new_map[b_row][b_col] = '@'
+                    if self.is_target(self.player):
+                        new_map[p_row][p_col] = '.'
+                    else:
+                        new_map[p_row][p_col] = ' '
+            elif not self.is_target(box_new_pos):
+                if self.is_target(box_pos):
+                    new_map[b_row][b_col] = '+'
+                    new_map[b_new_row][b_new_col] = '$'
+                    if self.is_target(self.player):
+                        new_map[p_row][p_col] = '.'
+                    else:
+                        new_map[p_row][p_col] = ' '
+                else:
+                    new_map[b_new_row][b_new_col] = '$'
+                    new_map[b_row][b_col] = '@'
+                    if self.is_target(self.player):
+                        new_map[p_row][p_col] = '.'
+                    else:
+                        new_map[p_row][p_col] = ' '
+        elif self.is_target(player_new_pos):
+            new_map[p_new_row][p_new_col] = '+'
+            if self.is_target(self.player):
+                new_map[p_row][p_col] = '.'
+            else:
+                new_map[p_row][p_col] =' '
+        else:
+            new_map[p_new_row][p_new_col] = '@'
+            if self.is_target(self.player):
+                new_map[p_row][p_col] = '.'
+            else:
+                new_map[p_row][p_col] =' '
 
         # Update map                
         self.map = copy.deepcopy(new_map)
 
         # TODO: implement this method
         return GameState(self.map, self.current_cost + 1)
-        
+
     def check_solved(self):
         """Check if the game is solved"""
         total_boxes = len(self.boxes)

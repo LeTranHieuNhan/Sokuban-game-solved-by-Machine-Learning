@@ -199,6 +199,7 @@ class GameState:
 
             # If player goes into box position
             if self.is_box(player_new_pos):
+                # box position
                 b_row, b_col = player_new_pos
                 b_new_row, b_new_col = b_row, b_col
                 if direction == 'U':
@@ -212,10 +213,9 @@ class GameState:
                 elif direction == 'M':
                     return GameState(self.map, self.current_cost)
                 box_new_pos = (b_new_row, b_new_col)  # box position
+                
 
-                # If the box is on a target, and if so, do not move it
-                if self.is_target(player_new_pos):
-                    return self
+
                 # If box meets wall or meets another box then return
                 if self.is_wall(box_new_pos) or self.is_box(box_new_pos):
                     return self
@@ -224,6 +224,12 @@ class GameState:
                     new_map[b_new_row][b_new_col] = '*'
                     new_map[b_row][b_col] = '@'
                     new_map[p_row][p_col] = ' '
+                # TODO If box goes out of goal
+                    # previous box position in target
+                elif self.is_target(player_new_pos):
+                    new_map[b_new_row][b_new_col] = '$'
+                    new_map[b_row][b_col] = '+'
+                    new_map[p_row][p_col] = ' '   
                 # Update map, player will go into box, and box will go into another direction
                 else:
                     new_map[b_row][b_col] = new_map[p_row][p_col]
@@ -239,6 +245,12 @@ class GameState:
                 new_map[p_new_row][p_new_col] = '@'
         else:
             return self
+
+        # Update map                
+        self.map = copy.deepcopy(new_map)
+
+        # TODO: implement this method
+        return GameState(self.map, self.current_cost + 1)
 
         # Update map                
         self.map = copy.deepcopy(new_map)

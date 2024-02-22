@@ -67,7 +67,7 @@ class Solver(object):
                 
                 if next_state.check_solved():
                     print("Expanded Node:", str(count_expanded))
-                    print("All states: ", str(count_move_states))
+                    print("Generated states: ", str(count_move_states))
                     print("Number of moves: ", len(path + [direction]))
                     print(path + [direction])
                     return path + [direction]
@@ -81,7 +81,7 @@ class Solver(object):
     def dfs_recursive(self, current_state, path, count_expanded, count_move_states, visited):
         if current_state.check_solved():
             print("Expanded Node:", str(count_expanded))
-            print("All states: ", str(count_move_states))
+            print("Generated states: ", str(count_move_states))
             print("Number of moves: ", len(path))
             print(path)
             return path  
@@ -127,7 +127,7 @@ class Solver(object):
             # Check if the current state is solved
             if current_state.check_solved():
                 print("Expanded Node:", str(count_expanded))
-                print("All states: ", str(count_move_states))
+                print("Generated states: ", str(count_move_states))
                 print("Number of moves: ", len(path))
                 print(path)
                 return path  # Return the path if the goal is reached
@@ -162,7 +162,7 @@ class Solver(object):
             
             if current_state.check_solved():
                 print("Expanded Node:", str(count_expanded))
-                print("All states: ", str(count_move_states))
+                print("Generated states: ", str(count_move_states))
                 print("Number of moves: ", len(path))
                 print(path)
                 return path
@@ -194,7 +194,7 @@ class Solver(object):
             
             if current_state.check_solved():
                 print("Expanded Node:", str(count_expanded))
-                print("All states: ", str(count_move_states))
+                print("Generated states: ", str(count_move_states))
                 print("Number of moves: ", len(path))
                 print(path)
                 return path

@@ -192,13 +192,10 @@ class GameState:
             if self.is_wall(player_new_pos):
                 return self
 
-            # If player goes into goal direction
-            if self.is_target(player_new_pos):
-                new_map[p_new_row][p_new_col] = '+'
-                new_map[p_row][p_col] = ' '
+            
 
             # If player goes into box position
-            if self.is_box(player_new_pos):
+            elif self.is_box(player_new_pos):
                 # box position
                 b_row, b_col = player_new_pos
                 b_new_row, b_new_col = b_row, b_col
@@ -237,12 +234,20 @@ class GameState:
                     new_map[b_new_row][b_new_col] = '$'
 
             # If the previous path is the goal path
-            if not self.is_target(player_new_pos):
-                if self.is_target(self.player):
+            elif self.is_target(self.player):
+                if self.is_target(player_new_pos):
+                    new_map[p_new_row][p_new_col] = '+'
                     new_map[p_row][p_col] = '.'
-                else:
+                elif not self.is_target(player_new_pos):
+                    new_map[p_new_row][p_new_col] = '@' 
+                    new_map[p_row][p_col] = '.'
+            elif not self.is_target(self.player):
+                if self.is_target(player_new_pos):
+                    new_map[p_new_row][p_new_col] = '+'
                     new_map[p_row][p_col] = ' '
-                new_map[p_new_row][p_new_col] = '@'
+                else:
+                    new_map[p_new_row][p_new_col] = '@'
+                    new_map[p_row][p_col] = ' '
         else:
             return self
 
@@ -251,13 +256,7 @@ class GameState:
 
         # TODO: implement this method
         return GameState(self.map, self.current_cost + 1)
-
-        # Update map                
-        self.map = copy.deepcopy(new_map)
-
-        # TODO: implement this method
-        return GameState(self.map, self.current_cost + 1)
-
+        
     def check_solved(self):
         """Check if the game is solved"""
         total_boxes = len(self.boxes)

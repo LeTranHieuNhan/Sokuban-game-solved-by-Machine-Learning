@@ -15,8 +15,6 @@ import time
 from collections import deque
 from queue import Queue
 from queue import PriorityQueue
-import random
-
 
 class Solver(object):
     
@@ -47,36 +45,36 @@ class Solver(object):
 
     def bfs(self):
         visited = set()
-        queue = Queue()
-
-        # include (total cost, GameState, path)
-        queue.put((self.initial_state, []))
+        queue = deque([(self.initial_state, [])])
 
         count_expanded = 0
         count_move_states = 0
-        while not queue.empty():
-            current_state, path = queue.get()
+
+        while queue:
+            current_state, path = queue.popleft()
             count_expanded += 1
-            visited.add(tuple(map(tuple, current_state.map)))  # hasing
-            
+
+            if current_state.check_solved():
+                print("Expanded Node:", str(count_expanded))
+                print("Generated states: ", str(count_move_states))
+                print("Number of moves: ", len(path))
+                print(path)
+                return path
+
+            visited.add(tuple(map(tuple, current_state.map)))  # hashing
+
             for direction in ['U', 'D', 'L', 'R']:
-                # move('M'): Update all attributes of the current state to temp_state
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
                 count_move_states += 1
-                
-                if next_state.check_solved():
-                    print("Expanded Node:", str(count_expanded))
-                    print("Generated states: ", str(count_move_states))
-                    print("Number of moves: ", len(path + [direction]))
-                    print(path + [direction])
-                    return path + [direction]
-                
-                # Check if the next state is not visited
-                if tuple(map(tuple, next_state.map)) not in visited:
-                    queue.put((next_state, path + [direction]))
 
-        return None  
+                next_map_tuple = tuple(map(tuple, next_state.map))
+                if next_map_tuple not in visited:
+                    queue.append((next_state, path + [direction]))
+                    visited.add(next_map_tuple)
+
+        return None
+  
 
     def dfs_recursive(self, current_state, path, count_expanded, count_move_states, visited):
         if current_state.check_solved():
@@ -84,23 +82,24 @@ class Solver(object):
             print("Generated states: ", str(count_move_states))
             print("Number of moves: ", len(path))
             print(path)
-            return path  
+            return path
 
         count_expanded += 1
         visited.add(tuple(map(tuple, current_state.map)))  # hashing
 
-        for direction in ['U', 'D', 'L', 'R']: 
+        for direction in ['U', 'D', 'L', 'R']:
             temp_state = current_state.move('M')
             next_state = temp_state.move(direction)
             count_move_states += 1
-            
+
             # Check if the next state is not visited
             if tuple(map(tuple, next_state.map)) not in visited:
                 result = self.dfs_recursive(next_state, path + [direction], count_expanded, count_move_states, visited)
                 if result is not None:
                     return result
 
-        return None  
+        return None
+
 
     def dfs(self):
         count_expanded = 0
@@ -210,24 +209,36 @@ class Solver(object):
         return None
 
     def custom(self):
-        path = []
+        visited = set()
+        priority_queue = PriorityQueue()
 
-        while not self.initial_state.check_solved():
-            # Randomly choose a direction (U, D, L, R)
-            direction = random.choice(['U', 'D', 'L', 'R'])
+        # include (current cost, GameState, path)
+        priority_queue.put((self.initial_state.get_current_cost(), self.initial_state, []))
+        
+        count_expanded = 0
+        count_move_states = 0
+        while not priority_queue.empty():
+            _, current_state, path = priority_queue.get()
+            count_expanded += 1
             
-            # Move in the chosen direction
-            next_state = self.initial_state.move(direction)
+            if current_state.check_solved():
+                print("Expanded Node:", str(count_expanded))
+                print("Generated states: ", str(count_move_states))
+                print("Number of moves: ", len(path))
+                print(path)
+                return path
             
-            # Check if the move is valid (i.e., the state has changed)
-            if next_state != self.initial_state:
-                # Append the chosen direction to the path
-                path.append(direction)
+            visited.add(tuple(map(tuple, current_state.map))) # hashing
             
-            # Update the initial state for the next iteration
-            self.initial_state = next_state
+            for direction in ['U', 'D', 'L', 'R']:
+                temp_state = current_state.move('M')
+                next_state = temp_state.move(direction)
+                count_move_states += 1
+                
+                if tuple(map(tuple, next_state.map)) not in visited:
+                    priority_queue.put((next_state.get_current_cost(), next_state, path + [direction]))
 
-        return path
+        return None
 
     def get_solution(self):
         return self.solution

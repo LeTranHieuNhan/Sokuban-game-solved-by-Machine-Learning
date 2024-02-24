@@ -12,7 +12,6 @@
 
 import time
 from collections import deque
-from queue import Queue
 from queue import PriorityQueue
 
 class Solver(object):
@@ -236,8 +235,63 @@ class Solver(object):
                     priority_queue.put((next_state.get_heuristic(), next_state, path + [direction]))
         return None
 
+
+    # Best Frist Search
     def custom(self):
-        pass
+        visited = set()
+        priority_queue = PriorityQueue()
+
+        # include (custom_score, GameState, path)
+        priority_queue.put((self.custom_score(self.initial_state), self.initial_state, []))
+
+        count_expanded = 0
+        count_move_states = 0
+        while not priority_queue.empty():
+            _, current_state, path = priority_queue.get()
+            count_expanded += 1
+
+            if current_state.check_solved():
+                print("Expanded Node:", str(count_expanded))
+                print("Generated states: ", str(count_move_states))
+                print("Number of moves: ", len(path))
+                print(path)
+                return path
+
+            visited.add(tuple(map(tuple, current_state.map)))  # hasing
+
+            for direction in ['U', 'D', 'L', 'R']:
+                temp_state = current_state.move('M')
+                next_state = temp_state.move(direction)
+                count_move_states += 1
+
+                if tuple(map(tuple, next_state.map)) not in visited:
+                    priority_queue.put((self.custom_score(next_state), next_state, path + [direction]))
+
+        return None
+
+    def custom_score(self, state):
+        current_cost = state.get_current_cost()
+        
+        # Calculate the number of boxes in target positions
+        boxes_in_target = 0
+        for box in state.boxes:
+            if state.is_target(box):
+                boxes_in_target += 1
+
+        # Calculate the Manhattan distance from the player to the closest box
+        player_position = state.find_player()
+        
+        closest_box_distance = float('inf')  # positive infinity for comparison
+        for box in state.boxes:
+            distance = abs(player_position[0] - box[0]) + abs(player_position[1] - box[1])
+            closest_box_distance = min(closest_box_distance, distance)
+
+        
+        # Combine the factors to form the custom score
+        custom_score = current_cost + 2 * boxes_in_target - closest_box_distance
+        
+        return custom_score
+
 
     def get_solution(self):
         return self.solution

@@ -64,7 +64,7 @@ class GameState:
         targets = []
         for i in range(self.height):
             for j in range(self.width):
-                if self.map[i][j] in ('.', '*', '+'):
+                if self.map[i][j] in ('.', '*') or self.map[i][j] in ('+', '*'):
                     targets.append((i, j))
         return targets
 
@@ -212,47 +212,62 @@ class GameState:
                 return self
             # If box go into target position
             elif self.is_target(box_new_pos):
+                # Update box position
                 new_map[b_new_row][b_new_col] = '*'
                 # If previous box position (player new position) is in target
                 if self.is_target(box_pos):
+                    # Update Player position
                     new_map[b_row][b_col] = '+'
+                    # If previous player position is in target
                     if self.is_target(self.player):
-                        new_map[p_row][p_col] = '.'
+                        new_map[p_row][p_col] = '.' # Update old player position
                     else:
-                        new_map[p_row][p_col] = ' '
+                        new_map[p_row][p_col] = ' ' # Update old player position
                 else:
+                    # Update Player position
                     new_map[b_row][b_col] = '@'
+                    # If previous player position is in target
                     if self.is_target(self.player):
                         new_map[p_row][p_col] = '.'
                     else:
                         new_map[p_row][p_col] = ' '
+            # If box not in target position
             elif not self.is_target(box_new_pos):
+                # Update box position
+                new_map[b_new_row][b_new_col] = '$'
+                # If player new position in target position
                 if self.is_target(box_pos):
-                    new_map[b_row][b_col] = '+'
-                    new_map[b_new_row][b_new_col] = '$'
+                    new_map[b_row][b_col] = '+' # Update player position
+                    # If previous player position is in target position
                     if self.is_target(self.player):
-                        new_map[p_row][p_col] = '.'
+                        new_map[p_row][p_col] = '.' # Update old player position
                     else:
-                        new_map[p_row][p_col] = ' '
+                        new_map[p_row][p_col] = ' ' # Update old player position
+                # If player new position not in target position
                 else:
-                    new_map[b_new_row][b_new_col] = '$'
                     new_map[b_row][b_col] = '@'
                     if self.is_target(self.player):
                         new_map[p_row][p_col] = '.'
                     else:
                         new_map[p_row][p_col] = ' '
+        # If player posotion in target
         elif self.is_target(player_new_pos):
+            # Update Player position
             new_map[p_new_row][p_new_col] = '+'
+            # If player old position in target position
             if self.is_target(self.player):
-                new_map[p_row][p_col] = '.'
+                new_map[p_row][p_col] = '.' # Update old position
             else:
-                new_map[p_row][p_col] =' '
+                new_map[p_row][p_col] =' ' # Update old position
+        # Player move freely without interuption
         else:
+            # Update player new position
             new_map[p_new_row][p_new_col] = '@'
+            # If player old position in target position
             if self.is_target(self.player):
-                new_map[p_row][p_col] = '.'
+                new_map[p_row][p_col] = '.' # Update old position
             else:
-                new_map[p_row][p_col] =' '
+                new_map[p_row][p_col] =' ' # Update old position
 
         # Update map                
         self.map = copy.deepcopy(new_map)

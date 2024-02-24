@@ -72,32 +72,6 @@ class Solver(object):
                     visited.add(next_map_tuple)
 
         return None
-  
-
-    # def dfs_recursive(self, current_state, path, count_expanded, count_move_states, visited):
-    #     if current_state.check_solved():
-    #         print("Expanded Node:", str(count_expanded))
-    #         print("Generated states: ", str(count_move_states))
-    #         print("Number of moves: ", len(path))
-    #         print(path)
-    #         return path
-
-    #     count_expanded += 1
-    #     visited.add(tuple(map(tuple, current_state.map)))  # hashing
-
-    #     for direction in ['U', 'D', 'L', 'R']:
-    #         temp_state = current_state.move('M')
-    #         next_state = temp_state.move(direction)
-    #         count_move_states += 1
-
-    #         # Check if the next state is not visited
-    #         if tuple(map(tuple, next_state.map)) not in visited:
-    #             result = self.dfs_recursive(next_state, path + [direction], count_expanded, count_move_states, visited)
-    #             if result is not None:
-    #                 return result
-
-    #     return None
-
 
     def dfs(self):
         count_expanded = 0
@@ -128,13 +102,6 @@ class Solver(object):
                     visited.add(tuple(map(tuple, next_state.map)))
 
         return None
-
-    # def dfs(self):
-    #     count_expanded = 0
-    #     count_move_states = 0
-    #     visited = set()
-    #     return self.dfs_recursive(self.initial_state, [], count_expanded, count_move_states, visited)
-
 
 
     def astar(self):

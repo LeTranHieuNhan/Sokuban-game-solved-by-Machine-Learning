@@ -64,12 +64,12 @@ class Solver(object):
             for direction in ['U', 'D', 'L', 'R']:
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
-                count_move_states += 1
-
+                
                 next_map_tuple = tuple(map(tuple, next_state.map))
                 if next_map_tuple not in visited:
                     queue.append((next_state, path + [direction]))
                     visited.add(next_map_tuple)
+                    count_move_states += 1
 
         return None
 
@@ -77,10 +77,10 @@ class Solver(object):
         count_expanded = 0
         count_move_states = 0
         visited = set()
-        stack = [(self.initial_state, [])]
+        queue = [(self.initial_state, [])]
 
-        while stack:
-            current_state, path = stack.pop()
+        while queue:
+            current_state, path = queue.pop()
             count_expanded += 1
 
             if current_state.check_solved():
@@ -95,11 +95,11 @@ class Solver(object):
             for direction in ['U', 'D', 'L', 'R']:
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
-                count_move_states += 1
 
                 if tuple(map(tuple, next_state.map)) not in visited:
-                    stack.append((next_state, path + [direction]))
+                    queue.append((next_state, path + [direction]))
                     visited.add(tuple(map(tuple, next_state.map)))
+                    count_move_states += 1
 
         return None
 
@@ -130,13 +130,13 @@ class Solver(object):
             for direction in ['U', 'D', 'L', 'R']:
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
-                count_move_states += 1
                 
                 # Check if the next state is not visited
                 if tuple(map(tuple, next_state.map)) not in visited:
 
                     # Use a tuple (total cost, GameState, path) to ensure correct comparison
                     priority_queue.put((next_state.get_total_cost(), next_state, path + [direction]))
+                    count_move_states += 1
 
         return None  # Return None if no solution is found
 
@@ -165,10 +165,10 @@ class Solver(object):
             for direction in ['U', 'D', 'L', 'R']:
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
-                count_move_states += 1
                 
                 if tuple(map(tuple, next_state.map)) not in visited:
                     priority_queue.put((next_state.get_current_cost(), next_state, path + [direction]))
+                    count_move_states += 1
 
         return None
 
@@ -196,10 +196,10 @@ class Solver(object):
             for direction in ['U','D','L','R']:
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
-                count_move_states += 1
                 
                 if tuple(map(tuple, next_state.map)) not in visited:
                     priority_queue.put((next_state.get_heuristic(), next_state, path + [direction]))
+                    count_move_states += 1
         return None
 
 
@@ -229,10 +229,10 @@ class Solver(object):
             for direction in ['U', 'D', 'L', 'R']:
                 temp_state = current_state.move('M')
                 next_state = temp_state.move(direction)
-                count_move_states += 1
 
                 if tuple(map(tuple, next_state.map)) not in visited:
                     priority_queue.put((self.custom_score(next_state), next_state, path + [direction]))
+                    count_move_states += 1
 
         return None
 

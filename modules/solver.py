@@ -4,7 +4,7 @@
 # - A* search
 # - Uniform-cost search
 # - Greedy search
-# - Custom strategy
+# - Custom strategy (Best First Search with custom_score)
 # The solver class has the following methods:
 # - solve(): solve the game
 # """
